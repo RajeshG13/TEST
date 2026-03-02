@@ -1,1 +1,40 @@
-for testing
+import pandas as pd
+
+# Load Excel file
+file_path = "transactions.xlsx"   # change to your file name
+df = pd.read_excel(file_path)
+
+# Convert Start Time to Date
+df['Date'] = pd.to_datetime(df['Start Time']).dt.date
+
+# Ask user for date
+input_date = input("Enter date (YYYY-MM-DD): ")
+selected_date = pd.to_datetime(input_date).date()
+
+# Filter one day data
+day_data = df[df['Date'] == selected_date]
+
+if day_data.empty:
+    print("No transactions found for this date.")
+else:
+    # Calculate totals
+    total_amount = day_data['Sales Amount (₹)'].sum()
+    total_volume = day_data['Sales Volume (L)'].sum()
+
+    print("\n----- One Day Sales Report -----")
+    print("Date:", selected_date)
+    print("Total Sales Amount (₹):", round(total_amount, 2))
+    print("Total Sales Volume (L):", round(total_volume, 2))
+
+    # Fuel-wise summary
+    fuel_summary = day_data.groupby('Fuel Type').agg({
+        'Sales Amount (₹)': 'sum',
+        'Sales Volume (L)': 'sum'
+    })
+
+    print("\nFuel-wise Sales Summary:")
+    print(fuel_summary)
+
+    # Save report to Excel
+    fuel_summary.to_excel("one_day_sales_report.xlsx")
+    print("\nReport saved as: one_day_sales_report.xlsx")
